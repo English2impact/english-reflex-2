@@ -250,6 +250,9 @@
   .audio-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:13px;display:flex;flex-direction:column;gap:10px}
   .audio-card audio{width:100%}
   .audio-card .sc{width:100%;height:166px;border:0;border-radius:8px;display:block;background:var(--surface-2)}
+  .audio-card .sc-credit{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .audio-card .sc-credit a{color:var(--ink-3);text-decoration:none}
+  .audio-card .sc-credit a:hover{color:var(--salmon-ink);text-decoration:underline}
   .audio-card details.alt{border-top:1px dashed var(--line-strong);padding-top:9px}
   .audio-card details.alt summary{cursor:pointer;font-size:12.5px;color:var(--ink-3)}
   .audio-card details.alt[open] summary{margin-bottom:8px}
@@ -435,7 +438,9 @@
 
 /* ============================ content ============================ */
 
-const SOUNDCLOUD = "https://on.soundcloud.com/4m0bwg2vB9gvfDHiYQ";
+const SOUNDCLOUD = "https://soundcloud.com/english2impact/dialogue_finished-past_we";
+const SC_TITLE   = "Dialogue_Finished Past_We rolled out the new system last quarter";
+const SC_USER    = "https://soundcloud.com/english2impact";
 
 const VOCAB = [
   ["daily","get around to","sắp xếp được thời gian để làm","/ˌɡet əˈraʊnd tə/","[−] I did not <b>get around to</b> the supplier list until Friday."],
@@ -800,6 +805,8 @@ function buildDecode(){
     '<div class="audio-card">'+
       '<iframe class="sc" title="Dialogue — We rolled out the new system last quarter" scrolling="no" frameborder="no" allow="autoplay" '+
         'src="https://w.soundcloud.com/player/?url='+encodeURIComponent(SOUNDCLOUD)+'&color=%23d97757&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>'+
+      '<div class="sc-credit"><a href="'+SC_USER+'" target="_blank" rel="noopener">English2impact</a> · '+
+        '<a href="'+SOUNDCLOUD+'" target="_blank" rel="noopener">'+SC_TITLE+'</a></div>'+
       '<details class="alt"><summary>Use a direct MP3 instead</summary>'+
         '<div class="urlrow"><input type="url" id="audio-url" placeholder="Paste an MP3 link…"><button type="button" class="btn small" id="audio-set">Load</button></div>'+
         '<audio id="dlg-audio" controls preload="none"></audio>'+
@@ -1042,7 +1049,7 @@ document.getElementById("copy-vocab").onclick=function(){
   }).join("\n");
   const box=document.getElementById("vocab-out");
   box.hidden=false; box.value=txt; box.select();
-  try{ navigator.clipboard.writeText(txt); }catch(e){}
+  try{ const w=navigator.clipboard.writeText(txt); if(w&&w.catch) w.catch(function(){}); }catch(e){}
   this.textContent="Copied — paste anywhere";
 };
 
@@ -1150,7 +1157,7 @@ document.addEventListener("change",function(e){
 /* ---- report ---- */
 document.getElementById("copy-report").onclick=function(){
   const box=document.getElementById("export-box"); box.select();
-  try{ navigator.clipboard.writeText(box.value); }catch(e){}
+  try{ const w=navigator.clipboard.writeText(box.value); if(w&&w.catch) w.catch(function(){}); }catch(e){}
   document.getElementById("copy-note").textContent="Copied to your clipboard.";
 };
 
