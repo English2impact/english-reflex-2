@@ -103,13 +103,14 @@
   /* ---------- layout ---------- */
   .wrap{
     max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;
-    display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:44px;align-items:start;
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(186px,216px);gap:26px;align-items:start;
   }
   main{min-width:0;display:flex;flex-direction:column;gap:30px}
 
   /* ---------- rail ---------- */
-  .rail{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 18px);display:flex;flex-direction:column;gap:14px}
-  .rail-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 14px}
+  .rail{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 14px);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 28px);overflow:auto;scrollbar-width:none}
+  .rail::-webkit-scrollbar{width:0;display:none}
+  .rail-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:14px 12px}
   .ring-row{display:flex;align-items:center;gap:13px}
   .ring{width:58px;height:58px;flex:none}
   .ring circle{fill:none;stroke-width:7}
@@ -248,6 +249,10 @@
   /* ---------- dialogue ---------- */
   .audio-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:13px;display:flex;flex-direction:column;gap:10px}
   .audio-card audio{width:100%}
+  .audio-card .sc{width:100%;height:166px;border:0;border-radius:8px;display:block;background:var(--surface-2)}
+  .audio-card details.alt{border-top:1px dashed var(--line-strong);padding-top:9px}
+  .audio-card details.alt summary{cursor:pointer;font-size:12.5px;color:var(--ink-3)}
+  .audio-card details.alt[open] summary{margin-bottom:8px}
   .urlrow{display:flex;gap:8px;flex-wrap:wrap}
   .urlrow input{flex:1 1 260px;min-width:0;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;background:var(--paper)}
   .speedrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink-3)}
@@ -299,8 +304,9 @@
 
   .mobile-progress{display:none}
 
-  @media (max-width:900px){
-    .wrap{grid-template-columns:minmax(0,1fr);gap:24px}
+  @media (max-width:1000px){ .wrap{gap:20px;padding-inline:16px} }
+  @media (max-width:620px){
+    .wrap{grid-template-columns:minmax(0,1fr);gap:20px}
     .rail{position:static;order:-1}
     .rail .toc{max-height:none}
     .mobile-progress{display:block}
@@ -397,7 +403,7 @@
   .lab-banner{font-size:13.5px;color:var(--salmon-ink);font-weight:500;margin-bottom:10px}
   .lab-done{text-align:center;padding:14px 4px}
   .lab-done .big{font-family:var(--display);font-size:26px;color:var(--good)}
-  .transcript{display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:var(--radius);padding:13px;background:var(--surface)}
+  .transcript{display:none;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:var(--radius);padding:13px;background:var(--surface)}
   .transcript.show{display:flex}
 
   /* ---------- exchange / conversation blocks ---------- */
@@ -428,6 +434,8 @@
 "use strict";
 
 /* ============================ content ============================ */
+
+const SOUNDCLOUD = "https://on.soundcloud.com/4m0bwg2vB9gvfDHiYQ";
 
 const VOCAB = [
   ["daily","get around to","sắp xếp được thời gian để làm","/ˌɡet əˈraʊnd tə/","[−] I did not <b>get around to</b> the supplier list until Friday."],
@@ -790,16 +798,20 @@ function buildDecode(){
   }).join("");
   return shell(STEPS[5],
     '<div class="audio-card">'+
-      '<div class="urlrow"><input type="url" id="audio-url" placeholder="Paste the MP3 link (GitHub, SoundCloud, Drive direct link)…"><button type="button" class="btn small" id="audio-set">Load audio</button></div>'+
-      '<audio id="dlg-audio" controls preload="none"></audio>'+
-      '<div class="speedrow"><span>Speed</span>'+
-        '<button type="button" class="ghost" data-rate="1">1.00 — the lesson</button>'+
-        '<button type="button" class="ghost" data-rate="0.85">0.85 — shadowing</button>'+
-        '<span class="hint">Full speed on the first listen. The speed is the point.</span></div>'+
+      '<iframe class="sc" title="Dialogue — We rolled out the new system last quarter" scrolling="no" frameborder="no" allow="autoplay" '+
+        'src="https://w.soundcloud.com/player/?url='+encodeURIComponent(SOUNDCLOUD)+'&color=%23d97757&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>'+
+      '<details class="alt"><summary>Use a direct MP3 instead</summary>'+
+        '<div class="urlrow"><input type="url" id="audio-url" placeholder="Paste an MP3 link…"><button type="button" class="btn small" id="audio-set">Load</button></div>'+
+        '<audio id="dlg-audio" controls preload="none"></audio>'+
+        '<div class="speedrow"><span>Speed</span>'+
+          '<button type="button" class="ghost" data-rate="1">1.00 — the lesson</button>'+
+          '<button type="button" class="ghost" data-rate="0.85">0.85 — shadowing</button></div>'+
+      '</details>'+
+      '<p class="hint">Full speed on the first listen. The speed is the point.</p>'+
     '</div>'+
     '<p class="lede"><b>Before you listen:</b> Clara missed last quarter and has heard the rollout went badly. Every answer Adam gives is a finished event with a finished time attached. Listen once, books closed, then answer.</p>'+
     '<div class="drill">'+qs+'</div>'+
-    '<p class="hint">The transcript is below — read it only after you have answered all eight.</p>'+
+    '<div class="toolbar"><button type="button" class="btn small quiet" id="show-script">Show the transcript</button>'+'<span class="hint">Read it only after you have answered all eight.</span></div>'+
     '<div class="transcript" id="transcript"><div class="dlg">'+script+'</div></div>'+
     teach("Teacher — what to replay",
       "<p>Stop at line 6: <i>The old data did not transfer cleanly, so we sorted it out by hand.</i> The whole grammar of the session in one breath — <i>did not</i> + base form on the left, past with a split phrasal verb on the right. Rebuild it orally before moving on.</p>"+
@@ -1109,13 +1121,24 @@ document.querySelectorAll("[data-qa]").forEach(function(card){
 });
 
 const audioEl=document.getElementById("dlg-audio"), urlEl=document.getElementById("audio-url");
-if(S.audio){ urlEl.value=S.audio; audioEl.src=S.audio; }
-document.getElementById("audio-set").onclick=function(){
-  S.audio=urlEl.value.trim(); save(); audioEl.src=S.audio; audioEl.load();
-};
+if(audioEl&&urlEl){
+  if(S.audio){ urlEl.value=S.audio; audioEl.src=S.audio; document.querySelector("details.alt").open=true; }
+  document.getElementById("audio-set").onclick=function(){
+    S.audio=urlEl.value.trim(); save(); audioEl.src=S.audio; audioEl.load();
+  };
+}
 document.querySelectorAll("[data-rate]").forEach(function(b){
-  b.onclick=function(){ audioEl.playbackRate=parseFloat(b.getAttribute("data-rate")); };
+  b.onclick=function(){ if(audioEl) audioEl.playbackRate=parseFloat(b.getAttribute("data-rate")); };
 });
+
+const scriptBtn=document.getElementById("show-script");
+if(scriptBtn){
+  scriptBtn.onclick=function(){
+    const t=document.getElementById("transcript");
+    t.classList.toggle("show");
+    this.textContent = t.classList.contains("show") ? "Hide the transcript" : "Show the transcript";
+  };
+}
 
 /* ---- 7 exit ---- */
 document.addEventListener("change",function(e){
