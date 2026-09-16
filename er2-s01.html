@@ -254,17 +254,10 @@
 
   /* ---------- dialogue ---------- */
   .audio-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:13px;display:flex;flex-direction:column;gap:10px}
-  .audio-card audio{width:100%}
   .audio-card .sc{width:100%;height:166px;border:0;border-radius:8px;display:block;background:var(--surface-2)}
   .audio-card .sc-credit{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .audio-card .sc-credit a{color:var(--ink-3);text-decoration:none}
   .audio-card .sc-credit a:hover{color:var(--salmon-ink);text-decoration:underline}
-  .audio-card details.alt{border-top:1px dashed var(--line-strong);padding-top:9px}
-  .audio-card details.alt summary{cursor:pointer;font-size:12.5px;color:var(--ink-3)}
-  .audio-card details.alt[open] summary{margin-bottom:8px}
-  .urlrow{display:flex;gap:8px;flex-wrap:wrap}
-  .urlrow input{flex:1 1 260px;min-width:0;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;background:var(--paper)}
-  .speedrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink-3)}
   .dlg{display:flex;flex-direction:column;gap:7px}
   .line{display:grid;grid-template-columns:62px 1fr;gap:10px;font-size:15px;align-items:baseline}
   .line .who{font-family:var(--mono);font-size:12.5px;color:var(--salmon-ink);font-weight:600;text-align:right}
@@ -811,13 +804,6 @@ function buildDecode(){
         'src="https://w.soundcloud.com/player/?url='+encodeURIComponent(SOUNDCLOUD)+'&color=%23d97757&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>'+
       '<div class="sc-credit"><a href="'+SC_USER+'" target="_blank" rel="noopener">English2impact</a> · '+
         '<a href="'+SOUNDCLOUD+'" target="_blank" rel="noopener">'+SC_TITLE+'</a></div>'+
-      '<details class="alt"><summary>Use a direct MP3 instead</summary>'+
-        '<div class="urlrow"><input type="url" id="audio-url" placeholder="Paste an MP3 link…"><button type="button" class="btn small" id="audio-set">Load</button></div>'+
-        '<audio id="dlg-audio" controls preload="none"></audio>'+
-        '<div class="speedrow"><span>Speed</span>'+
-          '<button type="button" class="ghost" data-rate="1">1.00 — the lesson</button>'+
-          '<button type="button" class="ghost" data-rate="0.85">0.85 — shadowing</button></div>'+
-      '</details>'+
       '<p class="hint">Full speed on the first listen. The speed is the point.</p>'+
     '</div>'+
     '<p class="lede"><b>Before you listen:</b> Clara missed last quarter and has heard the rollout went badly. Every answer Adam gives is a finished event with a finished time attached. Listen once, books closed, then answer.</p>'+
@@ -1169,16 +1155,7 @@ document.querySelectorAll("[data-qa]").forEach(function(card){
   if(isDone("q-"+i)) card.classList.add("ok");
 });
 
-const audioEl=document.getElementById("dlg-audio"), urlEl=document.getElementById("audio-url");
-if(audioEl&&urlEl){
-  if(S.audio){ urlEl.value=S.audio; audioEl.src=S.audio; document.querySelector("details.alt").open=true; }
-  document.getElementById("audio-set").onclick=function(){
-    S.audio=urlEl.value.trim(); save(); audioEl.src=S.audio; audioEl.load();
-  };
-}
-document.querySelectorAll("[data-rate]").forEach(function(b){
-  b.onclick=function(){ if(audioEl) audioEl.playbackRate=parseFloat(b.getAttribute("data-rate")); };
-});
+
 
 const scriptBtn=document.getElementById("show-script");
 if(scriptBtn){
