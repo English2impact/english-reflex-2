@@ -206,6 +206,7 @@
   .trap{font-size:12.5px;color:var(--salmon-ink);font-weight:500}
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px}
+  .toolbar.checkbar{margin-top:6px;padding-top:12px;border-top:1px solid var(--line)}
   .toolbar .spacer{flex:1}
   .tally{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 
@@ -723,15 +724,14 @@ function buildDrill(st, items, opts){
     const cue = opts.mono ? '<span class="cue">'+it.cue+'</span>' : it.cue;
     return '<div class="item" data-item="'+opts.key+'-'+i+'">'+
       '<div class="prompt"><span class="idx">'+(i+1)+'</span><span>'+cue+start+'</span></div>'+
-      '<div class="answer-row"><input type="text" id="'+opts.key+'-'+i+'" data-text="'+opts.key+'-'+i+'" data-answer="'+opts.key+'-'+i+'" placeholder="Your answer…" autocomplete="off" spellcheck="false">'+
-      '<button type="button" class="btn small" data-check="'+opts.key+'-'+i+'">Check</button>'+
-      '<button type="button" class="btn small quiet" data-reveal="'+opts.key+'-'+i+'">Answer</button></div>'+
+      '<div class="answer-row"><input type="text" id="'+opts.key+'-'+i+'" data-text="'+opts.key+'-'+i+'" data-answer="'+opts.key+'-'+i+'" data-bank="'+opts.key+'" placeholder="Your answer…" autocomplete="off" spellcheck="false"></div>'+
       '<div class="verdict" data-verdict="'+opts.key+'-'+i+'"><span class="mark"></span><span class="model"></span></div>'+
       (it.trap?'<div class="trap">'+it.trap+'</div>':"")+
       '</div>';
   }).join("");
-  return shell(st, opts.intro+'<div class="drill">'+list+'</div>'+
-    '<div class="toolbar"><button type="button" class="btn small accent" data-checkall="'+opts.key+'">Check all ten</button>'+
+  return shell(st, opts.intro+'<p class="hint">Work through all ten, then check them together. Enter moves to the next line.</p>'+'<div class="drill">'+list+'</div>'+
+    '<div class="toolbar checkbar"><button type="button" class="btn accent" data-checkall="'+opts.key+'">Check my ten answers</button>'+
+    '<button type="button" class="btn small quiet" data-showall="'+opts.key+'">Show the answers</button>'+
     '<span class="spacer"></span><span class="tally" data-tally="'+opts.key+'">0 / 10 correct</span></div>'+
     (opts.extra||"")+
     (opts.teach||""));
@@ -1107,12 +1107,26 @@ document.addEventListener("click",function(e){
   const c=e.target.closest("[data-check]"); if(c){ checkItem(c.getAttribute("data-check"),false); return; }
   const r=e.target.closest("[data-reveal]"); if(r){ checkItem(r.getAttribute("data-reveal"),true); return; }
   const all=e.target.closest("[data-checkall]");
-  if(all){ const k=all.getAttribute("data-checkall"); BANKS[k].forEach(function(_,i){checkItem(k+"-"+i,false);}); }
+  if(all){
+    const k=all.getAttribute("data-checkall");
+    BANKS[k].forEach(function(_,i){checkItem(k+"-"+i,false);});
+    const first=document.querySelector('[data-item="'+k+'-0"]');
+    if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  const sa=e.target.closest("[data-showall]");
+  if(sa){ const k=sa.getAttribute("data-showall"); BANKS[k].forEach(function(_,i){checkItem(k+"-"+i,true);}); }
 });
 document.addEventListener("keydown",function(e){
   if(e.key!=="Enter") return;
   const el=e.target;
-  if(el.hasAttribute&&el.hasAttribute("data-answer")){ e.preventDefault(); checkItem(el.getAttribute("data-answer"),false); }
+  if(!(el.hasAttribute&&el.hasAttribute("data-answer"))) return;
+  e.preventDefault();
+  const k=el.getAttribute("data-bank");
+  const fields=Array.prototype.slice.call(document.querySelectorAll('[data-bank="'+k+'"]'));
+  const next=fields[fields.indexOf(el)+1];
+  if(next){ next.focus(); }
+  else { const btn=document.querySelector('[data-checkall="'+k+'"]'); if(btn) btn.click(); }
 });
 
 /* ---- 6 decode ---- */
