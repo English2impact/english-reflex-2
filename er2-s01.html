@@ -733,7 +733,7 @@ function buildDrill(st, items, opts){
       (it.trap?'<div class="trap">'+it.trap+'</div>':"")+
       '</div>';
   }).join("");
-  return shell(st, opts.intro+'<p class="hint">Work through all ten, then check them together. Enter moves to the next line.</p>'+'<div class="drill">'+list+'</div>'+
+  return shell(st, opts.intro+'<p class="hint">Work through all ten, then check them together. Enter moves to the next line. Showing the answers leaves what you typed alone — and never scores the item.</p>'+'<div class="drill">'+list+'</div>'+
     '<div class="toolbar checkbar"><button type="button" class="btn accent" data-checkall="'+opts.key+'">Check my ten answers</button>'+
     '<button type="button" class="btn small quiet" data-showall="'+opts.key+'">Show the answers</button>'+
     '<span class="spacer"></span><span class="tally" data-tally="'+opts.key+'">0 / 10 correct</span></div>'+
@@ -1060,20 +1060,46 @@ document.getElementById("copy-vocab").onclick=function(){
 /* ---- 3–5 drills ---- */
 const BANKS={a:DRILL_A,b:DRILL_B,c:DRILL_C};
 const SAY={ax:EXCHANGES,bx:CONVOS};
-function checkItem(key,reveal){
-  const parts=key.split("-"), k=parts[0], it=BANKS[k][+parts[1]];
-  const inp=document.querySelector('[data-answer="'+key+'"]');
-  const box=document.querySelector('[data-item="'+key+'"]');
-  const v=document.querySelector('[data-verdict="'+key+'"]');
-  if(reveal){ inp.value=it.acc[0]; S.text[key]=inp.value; save(); }
-  const good = matches(inp.value,it.acc) && inp.value.trim()!=="";
-  v.classList.add("show");
-  v.querySelector(".mark").textContent=good?"✓ correct":"✗ not yet";
-  v.classList.toggle("is-ok",good); v.classList.toggle("is-no",!good);
-  v.querySelector(".model").innerHTML=(good&&!reveal)?"":it.acc[0];
-  box.classList.toggle("ok",good); box.classList.toggle("no",!good&&inp.value.trim()!=="");
-  mark(key,good);
+function paintPart(k){
+  const bank=BANKS[k];
+  const shown=!!S.num["show-"+k], checked=!!S.num["checked-"+k];
+  bank.forEach(function(it,i){
+    const key=k+"-"+i;
+    const inp=document.querySelector('[data-answer="'+key+'"]');
+    const box=document.querySelector('[data-item="'+key+'"]');
+    const v=document.querySelector('[data-verdict="'+key+'"]');
+    if(!inp||!box||!v) return;
+    const typed=(inp.value||"").trim()!=="";
+    const good=isDone(key);
+    if(checked||shown){
+      v.classList.add("show");
+      v.querySelector(".mark").textContent = checked ? (good?"✓ correct":(typed?"✗ not yet":"— not answered")) : "";
+      v.classList.toggle("is-ok",checked&&good);
+      v.classList.toggle("is-no",checked&&!good&&typed);
+      v.querySelector(".model").innerHTML = (shown||(checked&&!good)) ? it.acc[0] : "";
+    } else {
+      v.classList.remove("show","is-ok","is-no");
+      v.querySelector(".mark").textContent="";
+      v.querySelector(".model").innerHTML="";
+    }
+    box.classList.toggle("ok",checked&&good);
+    box.classList.toggle("no",checked&&!good&&typed);
+  });
+  const btn=document.querySelector('[data-showall="'+k+'"]');
+  if(btn) btn.textContent = shown ? "Hide the answers" : "Show the answers";
   tally(k);
+}
+function checkPart(k){
+  S.num["checked-"+k]=1;
+  BANKS[k].forEach(function(it,i){
+    const inp=document.querySelector('[data-answer="'+k+'-'+i+'"]');
+    if(inp) mark(k+"-"+i, matches(inp.value,it.acc) && inp.value.trim()!=="");
+  });
+  save(); paintPart(k);
+}
+function toggleAnswers(k){
+  if(S.num["show-"+k]) delete S.num["show-"+k]; else S.num["show-"+k]=1;
+  save(); paintPart(k);
 }
 function tally(k){
   const bank=BANKS[k]||SAY[k];
@@ -1108,18 +1134,16 @@ document.addEventListener("click",function(e){
   const ha=e.target.closest("[data-hideall]");       if(ha){ const k=ha.getAttribute("data-hideall"); SAY[k].forEach(function(_,i){reveal(k+"-"+i,false);}); }
 });
 document.addEventListener("click",function(e){
-  const c=e.target.closest("[data-check]"); if(c){ checkItem(c.getAttribute("data-check"),false); return; }
-  const r=e.target.closest("[data-reveal]"); if(r){ checkItem(r.getAttribute("data-reveal"),true); return; }
   const all=e.target.closest("[data-checkall]");
   if(all){
     const k=all.getAttribute("data-checkall");
-    BANKS[k].forEach(function(_,i){checkItem(k+"-"+i,false);});
+    checkPart(k);
     const first=document.querySelector('[data-item="'+k+'-0"]');
     if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
     return;
   }
   const sa=e.target.closest("[data-showall]");
-  if(sa){ const k=sa.getAttribute("data-showall"); BANKS[k].forEach(function(_,i){checkItem(k+"-"+i,true);}); }
+  if(sa){ toggleAnswers(sa.getAttribute("data-showall")); }
 });
 document.addEventListener("keydown",function(e){
   if(e.key!=="Enter") return;
@@ -1206,10 +1230,7 @@ document.querySelectorAll("[data-flag]").forEach(function(el){
 setMode(S.mode||"self");
 SORT_WORDS.forEach(function(x){ const b=S.text["sort-"+x.w]; if(b) placeWord(x.w,b); });
 if(Object.keys(S.done).some(function(k){return k.indexOf("sort-")===0;})) checkSort(false);
-["a","b","c"].forEach(function(k){
-  BANKS[k].forEach(function(_,i){ if(isDone(k+"-"+i)){ const box=document.querySelector('[data-item="'+k+'-'+i+'"]'); if(box) box.classList.add("ok"); } });
-  tally(k);
-});
+["a","b","c"].forEach(function(k){ paintPart(k); });
 ["ax","bx"].forEach(function(k){
   SAY[k].forEach(function(_,i){ const id=k+"-"+i; if(isDone(id)){ const box=document.querySelector('[data-item="'+id+'"]'); if(box) box.classList.add("said"); reveal(id,true); } });
   tally(k);
