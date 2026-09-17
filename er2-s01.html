@@ -391,6 +391,8 @@
   .lab .src{background:var(--surface);border-left:3px solid var(--salmon);padding:11px 13px;border-radius:0 8px 8px 0;margin-top:15px;font-size:15px;line-height:1.7}
   .lab .src .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
   .lab .src u{text-decoration:none;border-bottom:1.5px solid var(--line-strong);padding:0 1.6em}
+  .lab .src u:has(b){border-bottom-color:var(--good);padding:0 .15em}
+  .lab .src u b{color:var(--good);font-weight:600}
   .opts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
   .opt{display:flex;gap:11px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:12px 13px;cursor:pointer;font-size:15.5px}
   .opt:hover{border-color:var(--salmon)}
@@ -567,7 +569,7 @@ const DRILL_B = [
 
 const DRILL_C = [
   {cue:"They rolled out the new system <b>last quarter</b>.", start:"When", acc:["When did they roll out the new system?"], trap:""},
-  {cue:"We kicked off <b>in early January</b>.", start:"When", acc:["When did you kick off?","When did we kick off?"], trap:"No object after the chunk — that is natural English."},
+  {cue:"We kicked off <b>in early January</b>.", start:"When", acc:["When did you kick off?","When did we kick off?"], trap:"No object after the term — that is natural English."},
   {cue:"<b>The board</b> signed off on the extra budget.", start:"Who", acc:["Who signed off on the extra budget?"], trap:"Subject question: no did, and the verb keeps its past form."},
   {cue:"They sorted out <b>the old data</b> by hand.", start:"What", acc:["What did they sort out by hand?"], trap:""},
   {cue:"He left the project <b>in February</b>.", start:"When", acc:["When did he leave the project?"], trap:""},
@@ -607,11 +609,11 @@ const CONVOS = [
 ];
 
 const EXIT = [
-  "I said a <b>[+]</b> sentence of my own, with one of today's chunks and a finished time reference.",
+  "I said a <b>[+]</b> sentence of my own, with one of today's terms and a finished time reference.",
   "I turned the same sentence into <b>[−]</b> — did not + base form, ending audible.",
   "I asked it as <b>[Y/N ?]</b> and my partner answered with a short form plus one clause.",
   "I asked it as <b>[Wh- ?]</b>, starting with <b>When</b>.",
-  "I said one negative with an irregular chunk: <i>I didn't run into anyone / we didn't come in under budget</i>."
+  "I said one negative with an irregular term: <i>I didn't run into anyone / we didn't come in under budget</i>."
 ];
 
 /* ============================ state ============================ */
@@ -638,9 +640,9 @@ function matches(input,accepted){ const n=norm(input); return accepted.some(a=>n
 const STEPS=[
   {id:"warm", n:1, title:"Warm-up — the ending you cannot hear", goal:"Sort 13 verbs by their past-tense sound. Four minutes.", keys:SORT_WORDS.map(w=>"sort-"+w.w)},
   {id:"lab",  n:2, title:"Term lab", goal:"Guess ten terms from the line they appear in, then drill the misses.", keys:TERMS.map((_,i)=>"t-"+i)},
-  {id:"drillA",n:3, title:"Drill A — [+] to [−]", goal:"Ten written transformations, then ten spoken exchanges.", keys:DRILL_A.map((_,i)=>"a-"+i).concat(EXCHANGES.map((_,i)=>"ax-"+i))},
-  {id:"drillB",n:4, title:"Drill B — [Y/N ?]", goal:"Ten written questions, then ten spoken short answers.", keys:DRILL_B.map((_,i)=>"b-"+i).concat(CONVOS.map((_,i)=>"bx-"+i))},
-  {id:"drillC",n:5, title:"Drill C — [Wh- ?]", goal:"Ten questions. When is the signature question of Stage 1.", keys:DRILL_C.map((_,i)=>"c-"+i)},
+  {id:"drillA",n:3, title:"Drill A — [+] positive to [−] negative", goal:"Ten written transformations, then ten spoken exchanges.", keys:DRILL_A.map((_,i)=>"a-"+i).concat(EXCHANGES.map((_,i)=>"ax-"+i))},
+  {id:"drillB",n:4, title:"Drill B — [Y/N ?] Yes/No question", goal:"Ten written questions, then ten spoken short answers.", keys:DRILL_B.map((_,i)=>"b-"+i).concat(CONVOS.map((_,i)=>"bx-"+i))},
+  {id:"drillC",n:5, title:"Drill C — [Wh- ?] Wh- question", goal:"Ten questions. When is the signature question of Stage 1.", keys:DRILL_C.map((_,i)=>"c-"+i)},
   {id:"decode",n:6, title:"Dialogue decode", goal:"Listen at full speed, then answer eight questions.", keys:COMPREHENSION.map((_,i)=>"q-"+i)},
   {id:"exit", n:7, title:"Exit ticket", goal:"Five things to produce out loud before you leave.", keys:EXIT.map((_,i)=>"x-"+i)}
 ];
@@ -681,11 +683,11 @@ function buildWarm(){
 
 /* --- 2 term lab --- */
 function buildLab(){
-  let rows='<tr class="band"><td colspan="3">Daily — 5 chunks</td></tr>';
+  let rows='<tr class="band"><td colspan="3">Daily — 5 terms</td></tr>';
   VOCAB.filter(v=>v[0]==="daily").forEach(function(v){
     rows+='<tr><td><div class="term">'+v[1]+'</div><div class="vi">'+v[2]+'</div></td><td class="ipa">'+v[3]+'</td><td class="ex">'+v[4]+'</td></tr>';
   });
-  rows+='<tr class="band"><td colspan="3">Workplace — 5 chunks</td></tr>';
+  rows+='<tr class="band"><td colspan="3">Workplace — 5 terms</td></tr>';
   VOCAB.filter(v=>v[0]==="work").forEach(function(v){
     rows+='<tr><td><div class="term">'+v[1]+'</div><div class="vi">'+v[2]+'</div></td><td class="ipa">'+v[3]+'</td><td class="ex">'+v[4]+'</td></tr>';
   });
@@ -723,7 +725,7 @@ function buildDrill(st, items, opts){
       '<div class="prompt"><span class="idx">'+(i+1)+'</span><span>'+cue+start+'</span></div>'+
       '<div class="answer-row"><input type="text" id="'+opts.key+'-'+i+'" data-text="'+opts.key+'-'+i+'" data-answer="'+opts.key+'-'+i+'" data-bank="'+opts.key+'" placeholder="Your answer…" autocomplete="off" spellcheck="false"></div>'+
       '<div class="verdict" data-verdict="'+opts.key+'-'+i+'"><span class="mark"></span><span class="model"></span></div>'+
-      (it.trap?'<div class="trap">'+it.trap+'</div>':"")+
+      (it.trap?'<div class="trap" hidden>'+it.trap+'</div>':"")+
       '</div>';
   }).join("");
   return shell(st, opts.intro+'<p class="hint">Work through all ten, then check them together. Enter moves to the next line. Showing the answers leaves what you typed alone — and never scores the item.</p>'+'<div class="drill">'+list+'</div>'+
@@ -734,7 +736,7 @@ function buildDrill(st, items, opts){
     (opts.teach||""));
 }
 
-/* --- open-answer blocks: A/B exchanges (Drill A) and conversations (Drill B) --- */
+/* --- open-answer blocks: spoken exchanges (Drill A and Drill B) --- */
 function turn(who,pol,text){
   return '<div class="turn"><span class="who-badge '+who+'">'+who.toUpperCase()+'</span><span>'+
     (pol?'<span class="pol">'+pol+'</span>':"")+text+'</span></div>';
@@ -771,7 +773,7 @@ function buildExchangeBlock(){
     '<p class="hint">Say it before you reveal. The ending has to be audible — <i>didn\'t roll out</i>, <i>didn\'t sign off on</i> — and a pronoun stays in the middle: <i>didn\'t wrap <b>it</b> up</i>.</p>';
 }
 function buildConvoBlock(){
-  return '<div class="block-head"><h3>Let\'s tackle these conversations!</h3>'+
+  return '<div class="block-head"><h3>Let\'s tackle these exchanges!</h3>'+
     '<span class="sub"><b>Speaking task — nothing to type.</b> A asks from the cue words. You are B: answer out loud with the short form only — <i>Yes, S + did</i> / <i>No, S + didn\'t</i>. Then reveal and check yourself.</span></div>'+
     '<div class="worked"><span class="w">Two worked examples</span>'+
     turn("a","[?+]","you / roll out / the system / last quarter")+
@@ -812,8 +814,8 @@ function buildDecode(){
     '<div class="transcript" id="transcript"><div class="dlg">'+script+'</div></div>'+
     teach("Teacher — what to replay",
       "<p>Stop at line 6: <i>The old data did not transfer cleanly, so we sorted it out by hand.</i> The whole grammar of the session in one breath — <i>did not</i> + base form on the left, past with a split phrasal verb on the right. Rebuild it orally before moving on.</p>"+
-      "<p>Line 2 vs line 14: <i>wrapped <b>it</b> up</i> / <i>wrapped up</i>. Same chunk, split once and whole once — ask the class why.</p>"+
-      "<p>Lines 15 and 16: <i>sign <b>it</b> off</i> / <i>signed <b>off on</b> it</i>. Play both back to back. Two chunks sharing one verb; drill both, explain neither.</p>"+
+      "<p>Line 2 vs line 14: <i>wrapped <b>it</b> up</i> / <i>wrapped up</i>. Same term, split once and whole once — ask the class why.</p>"+
+      "<p>Lines 15 and 16: <i>sign <b>it</b> off</i> / <i>signed <b>off on</b> it</i>. Play both back to back. Two terms sharing one verb; drill both, explain neither.</p>"+
       "<p>Line 1 vs line 11: <i>rolled out</i> (verb, two words) vs <i>the rollout</i> (noun, one word).</p>"));
 }
 
@@ -823,7 +825,7 @@ function buildExit(){
     return '<label class="checkline" data-check-line="x-'+i+'"><input type="checkbox" data-flag="x-'+i+'"><span>'+t+'</span></label>';
   }).join("");
   return shell(STEPS[6],
-    '<p class="lede">One chunk of your own, one pronoun object so the placement is audible, a finished time reference in every sentence. The last line is the one that proves you got the real lesson.</p>'+
+    '<p class="lede">One term of your own, one pronoun object so the placement is audible, a finished time reference in every sentence. The last line is the one that proves you got the real lesson.</p>'+
     '<div class="drill">'+items+'</div>'+
     '<div class="rule"><b>The chain.</b><span class="ex">[+] We rolled it out last quarter. → [−] We didn\'t roll it out last quarter. → [Y/N ?] Did you roll it out last quarter? → [Wh- ?] When did you roll it out?</span></div>');
 }
@@ -850,9 +852,9 @@ main.innerHTML = buildWarm()+buildLab()+
   buildDrill(STEPS[2],DRILL_A,{key:"a",mono:false,extra:buildExchangeBlock(),intro:'<p class="lede">The past moves <b>off</b> the verb and <b>onto</b> <i>did</i>, and the verb goes back to its base form. Write the full form — the contraction is for speaking.</p><div class="rule"><b>One tense marker at a time.</b><span class="ex"><span class="yes">✓</span> We did not roll out the system. &nbsp; <span class="no">✗</span> We did not rolled out the system.</span></div>',
     teach:teach("Teacher — items 4, 5, 8, 9, 10","<p><b>4 and 9:</b> the pronoun stays in the middle even in the negative — ✓ <i>did not wrap <b>it</b> up</i>. Expect ✗ <i>did not wrap up it</i>.</p><p><b>5 and 8:</b> the irregulars. ✓ <i>did not <b>run</b> into</i>, ✓ <i>did not <b>come</b> in under budget</i> — this is where most of the class slips.</p><p><b>10:</b> <i>end up</i> takes -ing, always. Do not open verb patterns today — Session 19 does that properly.</p>")})+
   buildDrill(STEPS[3],DRILL_B,{key:"b",mono:true,extra:buildConvoBlock(),intro:'<p class="lede">Build the question from the prompt. Items 5 and 8 are <b>negative questions</b> — you are surprised, because you thought the opposite.</p><div class="rule"><b>Two rules, one line.</b><span class="ex"><span class="yes">✓</span> Did they sign <b>it</b> off? &nbsp; <span class="no">✗</span> Did they sign off it?<br><span class="yes">✓</span> Didn\'t you wrap it up? &nbsp; <span class="no">✗</span> Did not you wrap it up?</span></div>',
-    teach:teach("Teacher — the answer is where the chunks live","<p>Vietnamese answers the <i>shape</i> of a negative question; English answers the <i>fact</i>. Let it happen once, then point at the board.</p><p>The spoken block drills the bare reflex — <i>Yes, we did</i> / <i>No, they didn't</i> — at speed. Once it is automatic, push the room one step further in Phase 2: short form <b>plus one clause</b>, <i>“Yes, we did — we finished two days early.”</i> Students allowed to answer in two words all term will still be answering in two words in Session 12.</p>")})+
+    teach:teach("Teacher — the answer is where the terms live","<p>Vietnamese answers the <i>shape</i> of a negative question; English answers the <i>fact</i>. Let it happen once, then point at the board.</p><p>The spoken block drills the bare reflex — <i>Yes, we did</i> / <i>No, they didn't</i> — at speed. Once it is automatic, push the room one step further in Phase 2: short form <b>plus one clause</b>, <i>“Yes, we did — we finished two days early.”</i> Students allowed to answer in two words all term will still be answering in two words in Session 12.</p>")})+
   buildDrill(STEPS[4],DRILL_C,{key:"c",mono:false,intro:'<p class="lede">Take a Yes/No question, remove <b>one</b> piece, and put the Wh- word in front. When the Wh- word <b>is</b> the subject, there is no <i>did</i> — and the verb keeps its past form.</p><div class="rule"><b>Two shapes.</b><span class="ex">Inverted: <b>When did</b> you finish? · <b>What did</b> they sign off on?<br>Subject: <b>Who signed</b> off on the budget? &nbsp; <span class="no">✗</span> Who did sign off…?</span></div>',
-    teach:teach("Teacher — write 3, 6 and 10 on the board together","<p>Subject questions: no <i>did</i>, past form kept. Expect ✗ <i>Who did sign off…?</i> and ✗ <i>Who run into…?</i> from half the room.</p><p>Drill <b>“When exactly?”</b> and <b>“How did it go?”</b> as chunks — between them they open and close almost every professional conversation about something that has already happened.</p>")})+
+    teach:teach("Teacher — write 3, 6 and 10 on the board together","<p>Subject questions: no <i>did</i>, past form kept. Expect ✗ <i>Who did sign off…?</i> and ✗ <i>Who run into…?</i> from half the room.</p><p>Drill <b>“When exactly?”</b> and <b>“How did it go?”</b> as terms — between them they open and close almost every professional conversation about something that has already happened.</p>")})+
   buildDecode()+buildExit()+buildReport();
 
 const toc=document.getElementById("toc");
@@ -1005,6 +1007,8 @@ function answerLab(n){
     if(k===t.a) b.classList.add("ok");
     else if(k===n) b.classList.add("no");
   });
+  const slot=document.querySelector("#lab-card .src u");
+  if(slot) slot.innerHTML='<b>'+t.opts[t.a]+'</b>';
   mark("t-"+i, n===t.a);
   document.getElementById("lab-next").disabled=false;
   renderTicks();
@@ -1070,6 +1074,8 @@ function paintPart(k){
     }
     box.classList.toggle("ok",checked&&good);
     box.classList.toggle("no",checked&&!good&&typed);
+    const trap=box.querySelector(".trap");
+    if(trap) trap.hidden = !checked;
   });
   const btn=document.querySelector('[data-showall="'+k+'"]');
   if(btn) btn.textContent = shown ? "Hide the answers" : "Show the answers";
